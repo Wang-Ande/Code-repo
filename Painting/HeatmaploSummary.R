@@ -50,7 +50,7 @@ QC_heatmap(data = data_input,data_group = data_group,
 dev.off()
 
 # 多蛋白表达热图 ----
-expr <- read.csv("./01_Data/OCI_report.pg_matrix_fill_norma.csv",row.names = 1)
+expr <- read.csv("./01_Data/report.pg_matrix_fill_norma.csv",row.names = 1)
 anno <- read.xlsx("./01_Data/data_anno.xlsx",rowNames = TRUE)
 expr_anno <- merge(expr, anno, by.x = 0, by.y = 0, all.x = TRUE)
 
@@ -60,20 +60,22 @@ gene1 <- unlist(lapply(y,function(y) strsplit(as.character(y),";")[[1]][1]))
 expr_anno$gene <- gene1
 
 # 选择目标蛋白
-targeted_prote <- expr_anno[grep("PHGDH|PSAT1|PSPH|SLC1A4|SLC1A5|TP53|FLT3|CD38|CXCR4|CD69|AKT|CDK1|ENSA|MKI67|BCAT1", expr_anno$gene),]
+targeted_prote <- expr_anno[grep("PHGDH|PSAT1|PSPH|SLC1A4|SLC1A5|TP53|FLT3|CD38|CDK1|CDK2|CDK4|CDK6|CD69|CDKN1A|CDKN1B|WEE1|PKMYT1|E2F1|CDC25|RB1|MYC|PLK1|PCNA|MCM2|ENSA|MKI67|BCAT1", expr_anno$gene),]
 rownames(targeted_prote) <- targeted_prote$gene
 targeted_prote <- targeted_prote[,grep("OCI", colnames(targeted_prote))]
 
 rownames(targeted_prote)
-targeted_prote <- targeted_prote[-grep("TP53I11|TP53BP1|TP53BP2|TP53I3|TP53RK|CDK11B|CDK13|CDK10|CDK19|CDK12|CDK11A",rownames(targeted_prote)),]
+targeted_prote <- targeted_prote[-grep("TP53I11|TP53BP1|TP53BP2|TP53I3|TP53RK|CDK11B|CDK13|CDK10|CDK19|CDK12|CDK11A|CDK2P1|URB1|ARRB1|ADARB1|GRB1|CCDC25|LILRB1|ZCRB1|RB1CC1|SCARB1",rownames(targeted_prote)),]
 targeted_prote <- targeted_prote[,order(colnames(targeted_prote))]
 colnames(targeted_prote)
-targeted_prote <- targeted_prote[,c("OCI_WT_1", "OCI_WT_2", "OCI_WT_3", 
-                                    "OCI_2W_1", "OCI_2W_2", "OCI_2W_3", "OCI_4W_2",
-                                    "OCI_6W_1", "OCI_6W_2", "OCI_6W_3")]
+Sample_order <- c("OCI_WT_1", "OCI_WT_2", "OCI_WT_3","OCI_2W_1", "OCI_2W_2", "OCI_2W_3", "OCI_4W_2","OCI_6W_1", "OCI_6W_2", "OCI_6W_3")
+Sample_order <- gsub("OCI","MV4_11",Sample_order)
+targeted_prote <- targeted_prote[,Sample_order]
+
 library(circlize)
 library(ComplexHeatmap)
 expr_matrix <- targeted_prote
+expr_matrix <- targeted_prote[,-grep("4W",colnames(targeted_prote))]
 # 创建分组信息
 sample_groups <- case_when(
   grepl("WT", colnames(expr_matrix)) ~ "WT",
@@ -124,6 +126,6 @@ ht <- draw(ht,
      merge_legend = TRUE,
      padding = unit(c(2, 12, 2, 2), "mm"),  # 调整边距
      legend_gap = unit(6, "mm")) # 图例边距
-cairo_pdf("./03_Result/DEP/OCI_AML2_single_fill/Targeted_proteins_expr_heatmap.pdf", width = 6, height = 5)
+cairo_pdf("./03_Result/DEP/OCI_AML2/Proliferation_proteins_expr_heatmap.pdf", width = 6, height = 5)
 ht
 dev.off()
