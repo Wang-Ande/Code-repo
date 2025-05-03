@@ -60,22 +60,46 @@ gene1 <- unlist(lapply(y,function(y) strsplit(as.character(y),";")[[1]][1]))
 expr_anno$gene <- gene1
 
 # 选择目标蛋白
-targeted_prote <- expr_anno[grep("PHGDH|PSAT1|PSPH|SLC1A4|SLC1A5|TP53|FLT3|CD38|CDK1|CDK2|CDK4|CDK6|CD69|CDKN1A|CDKN1B|WEE1|PKMYT1|E2F1|CDC25|RB1|MYC|PLK1|PCNA|MCM2|ENSA|MKI67|BCAT1", expr_anno$gene),]
+targeted_prote <- expr_anno[grep("PHGDH|PSAT1|PSPH|SLC1A4|SLC1A5|TP53|FLT3|CD38|CXCR4|PCNA|AKT|CDK1|ENSA|MKI67|BCAT1", expr_anno$gene),]
 rownames(targeted_prote) <- targeted_prote$gene
-targeted_prote <- targeted_prote[,grep("OCI", colnames(targeted_prote))]
+targeted_prote <- targeted_prote[,grep("MOLM13|MV4_11|OCI", colnames(targeted_prote))]
 
 rownames(targeted_prote)
 targeted_prote <- targeted_prote[-grep("TP53I11|TP53BP1|TP53BP2|TP53I3|TP53RK|CDK11B|CDK13|CDK10|CDK19|CDK12|CDK11A|CDK2P1|URB1|ARRB1|ADARB1|GRB1|CCDC25|LILRB1|ZCRB1|RB1CC1|SCARB1",rownames(targeted_prote)),]
 targeted_prote <- targeted_prote[,order(colnames(targeted_prote))]
 colnames(targeted_prote)
-Sample_order <- c("OCI_WT_1", "OCI_WT_2", "OCI_WT_3","OCI_2W_1", "OCI_2W_2", "OCI_2W_3", "OCI_4W_2","OCI_6W_1", "OCI_6W_2", "OCI_6W_3")
-Sample_order <- gsub("OCI","MV4_11",Sample_order)
+Sample_order <- c("MOLM13_WT_1", "MOLM13_WT_2", "MOLM13_WT_3", 
+                  "MOLM13_2W_2", "MOLM13_2W_3", 
+                  "MOLM13_6W_1", "MOLM13_6W_2", "MOLM13_6W_3",
+                  "MV4_11_WT_1", "MV4_11_WT_2", "MV4_11_WT_3",
+                  "MV4_11_2W_1", "MV4_11_2W_2", "MV4_11_2W_3", 
+                  "MV4_11_6W_1", "MV4_11_6W_2", "MV4_11_6W_3",
+                  "OCI_WT_1", "OCI_WT_2", "OCI_WT_3",
+                  "OCI_2W_1", "OCI_2W_2", "OCI_2W_3", 
+                  "OCI_4W_2","OCI_6W_1", "OCI_6W_2", "OCI_6W_3")
+# Sample_order <- gsub("OCI","MV4_11",Sample_order)
 targeted_prote <- targeted_prote[,Sample_order]
 
 library(circlize)
 library(ComplexHeatmap)
 expr_matrix <- targeted_prote
 expr_matrix <- targeted_prote[,-grep("4W",colnames(targeted_prote))]
+
+# 定义 Cell line 分组
+cell_lines <- case_when(
+  grepl("MOLM13", colnames(expr_matrix)) ~ "MOLM13",
+  grepl("MV4_11", colnames(expr_matrix)) ~ "MV4_11",
+  grepl("OCI", colnames(expr_matrix)) ~ "OCI_AML2"
+)
+cell_lines <- factor(cell_lines, levels = c("MOLM13", "MV4_11", "OCI_AML2"))
+
+# 为 Cell line 设置颜色
+cell_line_colors <- c(
+  MOLM13 = "#66C2A5",
+  MV4_11 = "#8DA0CB",
+  OCI_AML2 = "#FC8D62"
+)
+
 # 创建分组信息
 sample_groups <- case_when(
   grepl("WT", colnames(expr_matrix)) ~ "WT",
@@ -89,7 +113,23 @@ sample_groups <- factor(sample_groups, levels = c("WT", "Low", "High"))
 # 创建颜色映射
 group_colors <- c(WT = "#6388B4", Low = "#FFAE34", High = "#EF6F6A")
 
-# 创建 ComplexHeatmap 的列注释对象
+# 创建包含两个分组注释的列注释对象（Cell line 在上面）
+ha_col <- HeatmapAnnotation(
+  Cell_line = cell_lines,
+  Group = sample_groups,
+  col = list(
+    Cell_line = cell_line_colors,
+    Group = group_colors
+  ),
+  annotation_name_side = "right",
+  annotation_legend_param = list(
+    Cell_line = list(title = "Cell line", title_gp = gpar(fontface = "bold", fontsize = 10), labels_gp = gpar(fontsize = 8)),
+    Group = list(title = "Group", title_gp = gpar(fontface = "bold", fontsize = 10), labels_gp = gpar(fontsize = 8))
+  ),
+  annotation_height = unit(c(6, 6), "mm")  # 控制两个注释行的高度
+)
+
+# 创建 group 的列注释对象
 ha_col <- HeatmapAnnotation(
   Group = sample_groups,
   col = list(Group = group_colors),
@@ -99,13 +139,15 @@ ha_col <- HeatmapAnnotation(
                                  labels_gp = gpar(fontsize = 8))
 )
 
+# scale
 log_expr <- log2(expr_matrix + 1)
 scaled_expr <- t(scale(t(log_expr)))  # 每行（每个基因）标准化
 
+# plot
 ht <- Heatmap(
   scaled_expr,
   name = "Z-score",
-  top_annotation = ha_col,          # 加上分组注释
+  top_annotation = ha_col,           # 加上分组注释
   col = circlize::colorRamp2(c(-2, 0, 2), colors = c("#1E90FF", "white", "#FF4500")),
   cluster_rows = TRUE,
   cluster_columns = FALSE,
@@ -126,6 +168,7 @@ ht <- draw(ht,
      merge_legend = TRUE,
      padding = unit(c(2, 12, 2, 2), "mm"),  # 调整边距
      legend_gap = unit(6, "mm")) # 图例边距
-cairo_pdf("./03_Result/DEP/OCI_AML2/Proliferation_proteins_expr_heatmap.pdf", width = 6, height = 5)
+# res output
+cairo_pdf("./03_Result/DEP/Targeted_proteins_expr_heatmap.pdf", width = 7, height = 5)
 ht
 dev.off()
