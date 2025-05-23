@@ -2,3 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# 特定拓展后缀文件
+*.csv
+*.xlsx
+*.xlx
+*.RData
