@@ -99,6 +99,9 @@ expr_filtered <- expr_mat[top_var_genes, ]
 # 使用svaseq推断隐变量（SVs）
 n.sv <- min(num.sv(expr_filtered, mod, method="leek"),15)   # 限制最大数量sv为15 ，“leek”为推荐方法，
 svobj <- sva(as.matrix(expr_mat), mod, mod0, n.sv = 15)     # 选择n.sv = 15
+fsvaobj <- fsva(dbdat = as.matrix(expr_mat),mod = mod,sv = svobj, 
+             newdat = matrix(nrow = nrow(expr_mat), ncol = 0)) # 函数源代码有误，需要提供一个数据集作为newdata
+expr_corrected <- fsvaobj$db                                # 与removeBatchEffect矫正结果一样，二选一即可
 
 # 查看不同SVs与PC1 explained vraiance 的关系
 source("./Beat-AML/02_Code/test_sv_range.R")
@@ -111,7 +114,7 @@ check_sva_overfitting(expr_mat = expr_mat,
                       svobj = svobj, 
                       mod = mod)
 
-# 获取矫正后的表达矩阵
+# 获取矫正后的表达矩阵（如果用fsvaobj得到矫正后的矩阵，即可省略）
 expr_corrected <- removeBatchEffect(expr_mat, covariates = svobj$sv, design = mod)
 expr_corrected <- as.data.frame(expr_corrected)
 write.csv(expr_corrected, file = "./Beat-AML/01_Data/Venetoclax/Expr_corrected.csv")
@@ -149,4 +152,10 @@ clusplot(pc_data, clusters, color=TRUE, shade=TRUE, labels=2, lines=0, main="Clu
 
 
 
-
+corrected_expr_1 <- fsva(
+  dbdat = as.matrix(expr_mat),  # 需要校正的表达矩阵
+  mod = mod,              # 原模型矩阵（与SVA阶段一致）
+  sv = svobj,          # SVA结果
+  newdat = as.matrix(expr_mat)           # 如果没有新数据，设为NULL
+)
+corrected_matrix_1 <- corrected_expr_1$db
