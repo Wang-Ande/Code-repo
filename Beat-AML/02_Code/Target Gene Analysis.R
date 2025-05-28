@@ -98,7 +98,7 @@ expr_filtered <- expr_mat[top_var_genes, ]
 
 # 使用svaseq推断隐变量（SVs）
 n.sv <- min(num.sv(expr_filtered, mod, method="leek"),15)   # 限制最大数量sv为15 ，“leek”为推荐方法，
-svobj <- sva(as.matrix(expr_mat), mod, mod0, n.sv = 15)     # 选择n.sv = 15
+svobj <- sva(as.matrix(expr_mat), mod, mod0, n.sv = 14)     # 选择n.sv = 14
 fsvaobj <- fsva(dbdat = as.matrix(expr_mat),mod = mod,sv = svobj, 
              newdat = matrix(nrow = nrow(expr_mat), ncol = 0)) # 函数源代码有误，需要提供一个数据集作为newdata
 expr_corrected <- fsvaobj$db                                # 与removeBatchEffect矫正结果一样，二选一即可
