@@ -58,19 +58,19 @@ group_list <- Ven_Response$group
 # 绘制 PCA 并保存为 PDF
 pdf("./Beat-AML/03_Result/PCA_corrected.pdf", height = 6.5, width = 6.5)
 pca1 <- fviz_pca_ind(pca_result,
-                  axes = c(1, 2),             # 显示 PC1 和 PC2
-                  geom.ind = c("point"),      # 显示点和文本
-                  col.ind = group_list,       # 根据分组着色
-                  #shape.ind = batch_list,    # 设定批次信息
-                  palette = c("#e74645", "#56B4E9","#F2A200"), # 自定义颜色
-                  #shape = c(16,17) ,         # 不同的批次会被绘制为实心圆形、实心三角形
-                  addEllipses = TRUE,         # 添加置信区间椭圆
-                  ellipse.type = "t",         # 置信区间椭圆,参数confidence(大样本)/t
-                  legend.title = "Group", 
-                  title = "PCA of  Dataset",
-                  label = "all",              # 显示所有样本的 ID
-                  repel = TRUE)+              # 防止标签重叠（推荐）
-      theme_classic()
+                     axes = c(1, 2),             # 显示 PC1 和 PC2
+                     geom.ind = c("point"),      # 显示点和文本
+                     col.ind = group_list,       # 根据分组着色
+                     #shape.ind = batch_list,    # 设定批次信息
+                     palette = c("#e74645", "#56B4E9","#F2A200"), # 自定义颜色
+                     #shape = c(16,17) ,         # 不同的批次会被绘制为实心圆形、实心三角形
+                     addEllipses = TRUE,         # 添加置信区间椭圆
+                     ellipse.type = "t",         # 置信区间椭圆,参数confidence(大样本)/t
+                     legend.title = "Group", 
+                     title = "PCA of  Dataset",
+                     label = "all",              # 显示所有样本的 ID
+                     repel = TRUE)+              # 防止标签重叠（推荐）
+  theme_classic()
 print(pca1)
 dev.off()
 
@@ -98,9 +98,9 @@ expr_filtered <- expr_mat[top_var_genes, ]
 
 # 使用svaseq推断隐变量（SVs）
 n.sv <- min(num.sv(expr_filtered, mod, method="leek"),15)   # 限制最大数量sv为15 ，“leek”为推荐方法，
-svobj <- sva(as.matrix(expr_mat), mod, mod0, n.sv = 14)     # 选择n.sv = 14
+svobj <- sva(as.matrix(expr_mat), mod, mod0, n.sv = 15)     # 选择n.sv = 15
 fsvaobj <- fsva(dbdat = as.matrix(expr_mat),mod = mod,sv = svobj, 
-             newdat = matrix(nrow = nrow(expr_mat), ncol = 0)) # 函数源代码有误，需要提供一个数据集作为newdata
+                newdat = matrix(nrow = nrow(expr_mat), ncol = 0)) # 函数源代码有误，需要提供一个数据集作为newdata
 expr_corrected <- fsvaobj$db                                # 与removeBatchEffect矫正结果一样，二选一即可
 
 # 查看不同SVs与PC1 explained vraiance 的关系
@@ -149,13 +149,3 @@ clusters <- mc$classification
 
 # 可视化聚类
 clusplot(pc_data, clusters, color=TRUE, shade=TRUE, labels=2, lines=0, main="Clustering via Mclust")
-
-
-
-corrected_expr_1 <- fsva(
-  dbdat = as.matrix(expr_mat),  # 需要校正的表达矩阵
-  mod = mod,              # 原模型矩阵（与SVA阶段一致）
-  sv = svobj,          # SVA结果
-  newdat = as.matrix(expr_mat)           # 如果没有新数据，设为NULL
-)
-corrected_matrix_1 <- corrected_expr_1$db
