@@ -34,16 +34,14 @@ ggplot(iris, aes(x = Species, y = Sepal.Length)) +
 
 # 样本配对箱线图 ----
 # load data
-expr <- read.csv("./01_Data/report.pg_matrix_fill_norma.csv",row.names = 1)
-anno <- read.xlsx("./01_Data/data_anno.xlsx",rowNames = TRUE)
-expr <- merge(expr, anno, by.x = 0, by.y = 0, all.x = TRUE)
-targeted_gene <- expr[grep("TP53",expr$Genes),]
-expr_targeted <- targeted_gene[2,grep("MV4_11",colnames(targeted_gene))]
+expr <- read.csv("./Beat-AML/01_Data/Gene Counts CPM Venetoclax.csv",row.names = 1)
+targeted_gene <- expr[grep("PHGDH",rownames(expr)),]
+expr_targeted <- targeted_gene[1,grep("MV4_11",colnames(targeted_gene))]
 expr_targeted <- t(log2(expr_targeted))
 colnames(expr_targeted)[1] <- "expr"
 expr_targeted <- as.data.frame(expr_targeted)
 
-group <- read.xlsx("./01_Data/IC50_group.xlsx")
+group <- read.xlsx("./Beat-AML/01_Data/Venetoclax Response Top.xlsx")
 group_targeted <- group[grep("MV4_11",group$id),c(1,2)]
 expr_targeted$group <- group_targeted$group
 
