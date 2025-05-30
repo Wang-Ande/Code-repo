@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.Proj
 
 # 特定拓展后缀文件
 *.csv
