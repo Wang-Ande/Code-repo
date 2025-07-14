@@ -9,4 +9,8 @@
 *.xlx
 *.RData
 *.pdf
+*.gitignore
+*.txt.gz
 
+# 特定文件夹
+5-May/Z+7/
