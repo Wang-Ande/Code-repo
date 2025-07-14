@@ -49,8 +49,8 @@ dev.off()
 # 创建数据框用于 ggplot2
 pca_df <- data.frame(PC1 = pca_result$x[,1], 
                      PC2 = pca_result$x[,2], 
-                     group = colData(dds)$group,
-                     batch = colData(dds)$batch)
+                     group = group_list,
+                     batch = batch_list)
 
 # 绘制 PCA 图
 ggplot(pca_df, aes(x = PC1, y = PC2, color = group, shape = batch)) +
