@@ -6,19 +6,14 @@
 #   方便使用者本地进行KEGG富集分析，而不依赖KEGG API 路径。
 #   优点：适用于网络卡顿或者需要保证结果统一的分析。
 #   缺点：需要保证本地KEGG数据的更新。
-#
-# Dependencies:
-#   - createKEGGdb (from GitHub: YuLab-SMU/createKEGGdb)
-#   - clusterProfiler
-#   - KEGG.db (custom, locally installed)
 
 # pkgs ----       
 # pak("YuLab-SMU/createKEGGdb") #创建KEGG数据库的包的包
-library(createKEGGdb)
-#创建名称为KEGG.db_1.0.tar,gz的包。
-createKEGGdb::create_kegg_db("hsa")   # 需要保持更新！！！！！！！！！！！
-#安装这个包(默认的包的路径在当前工作目录，根据实际情况修改路径)
-install.packages("KEGG.db_1.0.tar.gz",repos=NULL,type="source")
+# library(createKEGGdb)
+# 创建名称为KEGG.db_1.0.tar,gz的包。
+# createKEGGdb::create_kegg_db("hsa")   # 需要保持更新！！！！！！！！！！！
+# 安装这个包(默认的包的路径在当前工作目录，根据实际情况修改路径)
+# install.packages("KEGG.db_1.0.tar.gz",repos=NULL,type="source")
 library(KEGG.db)
 library(clusterProfiler)
 library(pathview)
@@ -30,7 +25,7 @@ library(openxlsx)
 library(ggplot2)
 
 # DE_res input ----
-DP_result <- read.csv('./03_Result/DEP/OCI_AML2/Low_vs_Ctrl/result_DE.csv')
+DP_result <- read.csv("D:/R/RStudio/Venetoclax-Resistance-WN/Proteome/03_Result/DEP/OCI_AML2_single_fill/High_vs_Ctrl/result_DE.csv")
 
 # set P.Value ----
 GeneSymbol <- subset(DP_result, P.Value < 0.05)
@@ -59,5 +54,6 @@ kk <- enrichKEGG(gene= gene$ENTREZI,
                  pvalueCutoff = 0.05,
                  pAdjustMethod = "BH",
                  qvalueCutoff = 1,
-                 use_internal_data =T) # 当使用本地的KEGG.db数据库时，use_internal_data设置为T,使用在线数据库时设置为F.
+                 readable = T,
+                 use_internal_data =T) # 当使用本地的KEGG.db数据库时，use_internal_data设置为T
 

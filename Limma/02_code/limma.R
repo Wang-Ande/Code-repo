@@ -60,3 +60,5 @@ vfit2 <- eBayes(vfit2)
 topTable(vfit2, coef="TGIF1vsCtrl", sort.by="P")
 alltable2 <- topTable(vfit2, coef = "TGIF1vsCtrl", number = Inf, sort.by="P")
 sum(alltable2$adj.P.Val < 0.05)
+
+# Differential splicing ----

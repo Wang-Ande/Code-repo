@@ -12,6 +12,10 @@
 *.pdf
 *.gitignore
 *.txt.gz
+*.gz
+*.tsv
+*.txt
+*.xml
 
 # 特定文件夹
 5-May/Z+7/
