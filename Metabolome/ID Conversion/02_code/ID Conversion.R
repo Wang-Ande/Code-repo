@@ -71,4 +71,65 @@ kegg_tolower <- kegg_long %>%
 write.csv(kegg_tolower, file ="./Metabolome/ID Conversion/03_result/kegg_tolower.csv")
 
 # Metabolites list input ----
-metabolites <-
+library(openxlsx)
+library(readr)
+library(dplyr)
+library(RSQLite)
+library(DBI)
+library(stringdist) # 模糊匹配
+
+kegg_database <- read.csv("./Metabolome/ID Conversion/03_result/kegg_tolower.csv", row.names = 1)
+hmdb_database <- read.csv("./Metabolome/ID Conversion/03_result/hmdb_tolower.csv", row.names = 1) 
+metabolites <- read.xlsx("./Metabolome/ID Conversion/01_data/DEM_name.xlsx") # 测试数据来自MOLM13 High-Ctrl
+
+kegg_database <- kegg_database[,c("compound_names","kegg_id")]
+head(kegg_database)
+metabolites <- metabolites[,-2]
+head(metabolites)
+# 大写换为小写
+metabolites_tolower <- tolower(metabolites)
+# 希腊字母换为英文
+source("./Metabolome/ID Conversion/02_code/replace_greek_letters.R")
+metabolites_tolower <- replace_greek_letters(metabolites_tolower)
+
+# 写入 SQLite 数据库 ----
+con <- dbConnect(RSQLite::SQLite(), "./Metabolome/ID Conversion/03_result/kegg_compound.db")
+dbWriteTable(con, "kegg_map_table", kegg_database, overwrite = TRUE)
+
+# 从数据库读取 compound_names 和 kegg_id
+kegg_names <- dbGetQuery(con, "SELECT DISTINCT compound_names, kegg_id FROM kegg_map_table")
+
+# 初始化结果向量
+matched_kegg_ids_fuzzy <- vector("character", length(metabolites))
+matched_names <- vector("character", length(metabolites))
+
+# 设置匹配容差限制
+max_dist <- 2
+
+for (i in seq_along(metabolites_tolower)) {
+  query <- metabolites_tolower[i]
+  distances <- stringdist::stringdist(query, kegg_names$compound_names, method = "jw")
+  min_dist <- min(distances)
+  min_index <- which.min(distances)
+  
+  # 只接受距离小于等于 max_dist 的匹配，否则为 NA
+  if (min_dist <= max_dist) {
+    matched_kegg_ids_fuzzy[i] <- kegg_names$kegg_id[min_index]
+    matched_names[i] <- kegg_names$compound_names[min_index]
+  } else {
+    matched_kegg_ids_fuzzy[i] <- NA
+    matched_names[i] <- NA
+  }
+}
+
+# 整合结果
+conversion_result_fuzzy <- data.frame(
+  original_name = metabolites,
+  processed_name = metabolites_tolower,
+  matched_kegg_name = matched_names,
+  matched_kegg_id = matched_kegg_ids_fuzzy,
+  stringsAsFactors = FALSE
+)
+
+# 查看未匹配的部分
+unmatched_fuzzy <- subset(conversion_result_fuzzy, is.na(matched_kegg_id))
