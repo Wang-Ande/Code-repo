@@ -1,4 +1,3 @@
-library(KEGGREST)
 library(dplyr)
 library(readr)
 library(openxlsx)
@@ -37,12 +36,13 @@ blacklist_subcategory <- c(
 blacklist_name <- c(
   # 病毒相关
   "covid", "coronavirus", "influenza", "measles", "mumps", "hiv", "htlv", "papillomavirus",
-  "hepatitis", "herpes", "epstein-barr", "adenovirus",
+  "hepatitis", "herpes", "epstein-barr", "adenovirus", "viral",
   # 细菌/寄生虫相关
   "tuberculosis", "cholera", "shigellosis", "salmonella", "pertussis", "legionellosis",
-  "leishman", "trypanosom", "malaria", "toxoplasmosis", "amebiasis",
+  "leishman", "trypanosom", "malaria", "toxoplasmosis", "amebiasis", "amoebiasis", "Chagas disease",
   # 其他
-  "staphylococcus", "vibrio", "helicobacter", "clostridium", "borrelia", "treponema"
+  "staphylococcus", "vibrio", "helicobacter", "clostridium", "borrelia", "treponema", "Hypertrophic", "cardiomyopathy", 
+  "circadian entrainment", "neuro"
 )
 
 # C. 按 ID（纯数字，等价于 hsa04110→写 4110 或 04110）加入黑名单（可留空）
@@ -67,10 +67,7 @@ whitelist_ids <- c(
   4151,   # PI3K-Akt signaling
   4115,   # p53 signaling
   190,    # Oxidative phosphorylation (hsa00190)
-  5410,   # HIF-1 signaling
-  4330,   # Jak-STAT (常见于血液肿瘤信号)
-  5200,   # Pathways in cancer
-  5213,   # Endocrine resistance（与耐药可能相关，慎删）
+  1522,   # Endocrine resistance（与耐药可能相关，慎删）
   5202    # Transcriptional misregulation in cancer
   # 按需增减
 )
@@ -94,7 +91,7 @@ keep_mask <- with(blacklist,
 blacklist <- blacklist[!keep_mask, , drop = FALSE]
 
 ## -------- 4) 保存黑名单 --------
-write.csv(blacklist, "kegg_blacklist.csv", row.names = FALSE)
+write.csv(blacklist, "./ClusterProfiler/kegg_blacklist.csv", row.names = FALSE)
 cat("✅ 黑名单已生成，共", nrow(blacklist), "条通路。\n")
 
 ## （可选）预览每类被屏蔽数量，便于你校对是否过严
