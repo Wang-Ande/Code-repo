@@ -25,7 +25,7 @@ library(openxlsx)
 library(ggplot2)
 
 # DE_res input ----
-DP_result <- read.csv("D:/R/RStudio/Venetoclax-Resistance-WN/Proteome/03_Result/DEP/OCI_AML2_single_fill/High_vs_Ctrl/result_DE.csv")
+DP_result <- read.csv("your DE_res") 
 
 # set P.Value ----
 GeneSymbol <- subset(DP_result, P.Value < 0.05)
@@ -38,16 +38,12 @@ y <- GeneSymbol$Genes
 gene <- unlist(lapply(y,function(y) strsplit(as.character(y),";")[[1]][1]))
 GeneSymbol$gene <- gene
 
-# 设置数据库 
-GO_database <- 'org.Hs.eg.db'  # GO是org.Hs.eg.db数据库
-KEGG_database <- 'hsa'         # KEGG是hsa数据库
-
 # gene list ----
 down_genes <- subset(GeneSymbol, logFC < -cutoff)
 
 # gene ID转换 
 gene <- clusterProfiler::bitr(down_genes$gene, fromType = 'SYMBOL', toType = 'ENTREZID', OrgDb = GO_database)
-
+library(KEGG.db)
 kk <- enrichKEGG(gene= gene$ENTREZI,
                  keyType = "kegg",
                  organism= 'hsa',

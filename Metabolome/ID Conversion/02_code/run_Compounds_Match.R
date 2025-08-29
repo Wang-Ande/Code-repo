@@ -136,3 +136,4 @@ compounds_match <- function(compound_list,
 # 使用示例
 # metabolites <- read.xlsx("./Metabolome/ID Conversion/01_data/DEM_name.xlsx")[,1]
 # results <- compounds_match(metabolites, id_types = c("kegg", "hmdb"))
+
