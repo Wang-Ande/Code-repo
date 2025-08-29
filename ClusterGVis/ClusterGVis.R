@@ -3,7 +3,7 @@
 # 1. Packages ----
 # Note: please update your ComplexHeatmap to the latest version!
 library(pak)
-pak::pak("junjunlab/ClusterGVis")
+pak::pkg_install("junjunlab/ClusterGVis")
 library(ClusterGVis)
 library(grid)
 library(ComplexHeatmap)
