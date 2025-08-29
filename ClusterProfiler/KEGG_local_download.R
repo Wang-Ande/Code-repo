@@ -43,7 +43,7 @@ down_genes <- subset(GeneSymbol, logFC < -cutoff)
 
 # gene ID转换 
 gene <- clusterProfiler::bitr(down_genes$gene, fromType = 'SYMBOL', toType = 'ENTREZID', OrgDb = GO_database)
-
+library(KEGG.db)
 kk <- enrichKEGG(gene= gene$ENTREZI,
                  keyType = "kegg",
                  organism= 'hsa',
