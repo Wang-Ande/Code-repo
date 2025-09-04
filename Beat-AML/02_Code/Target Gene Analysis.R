@@ -137,6 +137,9 @@ expr_merge <- merge(expr_corrected, res, by = "row.names")
 write.csv(expr_merge, file = "./Beat-AML/03_Result/Venetoclax/Expr_DE_merge.csv")
 
 # Cluster analysis ----
+expr_corrected <- read.csv("./Beat-AML/01_Data/Venetoclax/Expr_corrected.csv", row.names = 1)
+expr_merge <- read.csv("./Beat-AML/03_Result/Venetoclax/Expr_DE_merge.csv", row.names = 1)
+sig_genes <- expr_merge[expr_merge$adj.P.Val < 0.05,colnames(expr_merge)%in%c("Row.names")]
 # 仅用显著差异基因
 expr_sig <- expr_corrected[sig_genes, ]
 
@@ -145,7 +148,8 @@ pca <- prcomp(t(expr_sig), scale.=TRUE)
 pc_data <- pca$x[, 1:2]  # 前两个主成分
 
 # Mclust 聚类
-mc <- Mclust(t(expr_sig))  # 注意：Mclust默认用于样本聚类
+mc <- Mclust(pc_data)  # 注意：Mclust默认用于样本聚类
+saveRDS(mc, file = "./Beat-AML/03_Result/Venetoclax/Mcluster.rds")
 clusters <- mc$classification
 
 # 可视化聚类
